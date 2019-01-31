@@ -1,6 +1,8 @@
 import re
+import time
 import numpy as np
 import pynmea2
+import matplotlib.pyplot as plt
 from scipy.stats.stats import pearsonr 
 
 dataUrl = 'geo_data.nmea'
@@ -45,7 +47,7 @@ def cordinateToDD(data):
 
     return {'latitude':dd_lat, 'longitude':dd_lon}
 
-def viewData(data, cordinates, La, Fi):
+def viewAllData(data, cordinates, La, Fi):
     for i in range(len(data)):
         print('\nTime: '+str(data[i].timestamp))
         print('%02d°%02d′%07.4f″%s' %   
@@ -102,6 +104,79 @@ def avgCordinates(data):
     for i in range(len(data)):
         sumOfElements = sumOfElements + data[i]
     return(sumOfElements/len(data))
+def viewSummary(countInputLines, countOutputLines, avgLatitudeDMS, avgLongitudeDMS, mseLatitude, mseLongitude,bladKolowy,corelation):
+    print()
+    print("Liczba wynikow przed obrobka: %d \nLiczba wynikow po obrobce: % d" % (countInputLines,countOutputLines))
+    print()
+    print("Średnia szerokość: %02d°%02d′%07.4f″ \nŚrednia długość: %02d°%02d′%07.4f″" % 
+    (
+        avgLatitudeDMS[0], 
+        avgLatitudeDMS[1], 
+        avgLatitudeDMS[2],
+        avgLongitudeDMS[0],
+        avgLongitudeDMS[1],
+        avgLongitudeDMS[2]
+    ))
+    print()
+    print("Błąd szerokości: " + str(mseLatitude))
+    print("Błąd długości: " + str(mseLongitude))
+    print()
+    print("Błąd średni kołowy: " + str(bladKolowy))
+    print()
+    print("Współczynnik korelacji jest równy: " + str(corelation))
+    print()
+
+def viewPlotPosition(X,Y):
+    fig, ax1 = plt.subplots()
+
+    plt.title("Pozycja geograficzna")
+    plt.plot(X,Y,'rx')
+
+    ax1.set_xlabel('Latitude')
+    ax1.set_ylabel('Longitude')
+
+    plt.savefig('position.png')
+    # plt.show()
+
+def viewPlotLatitude(X,Y):
+    fig, ax1 = plt.subplots()
+
+    plt.title("Szerokość geograficzna")
+    plt.plot(X,Y,'gx')
+
+    ax1.set_xlabel('Time')
+    ax1.set_ylabel('Latitude')
+
+    plt.savefig('latitude.png')
+    # plt.show()
+
+def viewPlotLongitude(X,Y):
+    fig, ax1 = plt.subplots()
+    
+    plt.title("Długość geograficzna")
+    plt.plot(X,Y,'bx')
+    
+    ax1.set_xlabel('Time')
+    ax1.set_ylabel('Longitude')
+    
+    plt.savefig('longitude.png')
+    # plt.show()
+
+def viewPlotCorelation(X,Y1,Y2):
+    fig, ax1 = plt.subplots()
+
+    plt.title("Korelacja długość i szerokość")
+
+    ax2 = ax1.twinx()
+    ax1.plot(X,Y1, 'rx')
+    ax2.plot(X,Y2, 'b-')
+
+    ax1.set_xlabel('Time')
+    ax1.set_ylabel('Latitude', color='r')
+    ax2.set_ylabel('Longitude', color='b')
+
+    plt.savefig('corelation.png')
+    # plt.show()
 
 def main():
     file = open(dataUrl, 'r')
@@ -113,7 +188,7 @@ def main():
         cordinates = cordinateToDD(dataToAnalist)
         La, Fi = generateLaFi(dataToAnalist)
         
-        #viewData(dataToAnalist, cordinates, La, Fi)
+        # viewAllData(dataToAnalist, cordinates, La, Fi)
 
         avgLatitudeDD = avgCordinates(cordinates['latitude'])
         avgLongitudeDD = avgCordinates(cordinates['longitude'])
@@ -131,19 +206,16 @@ def main():
 
         corelation = pearsonr(cordinates['latitude'], cordinates['longitude'])[0]
 
-    print()
-    print("Liczba wynikow przed obrobka: %d \nLiczba wynikow po obrobce: % d" % (countInputLines,countOutputLines))
-    print()
-    print("Średnia szerokość: %02d°%02d′%07.4f″" % (avgLatitudeDMS[0], avgLatitudeDMS[1], avgLatitudeDMS[2]))
-    print("Średnia długość: %02d°%02d′%07.4f″" % (avgLongitudeDMS[0], avgLongitudeDMS[1], avgLongitudeDMS[2]))
-    print()
-    print("Błąd szerokości: " + str(mseLatitude))
-    print("Błąd długości: " + str(mseLongitude))
-    print()
-    print("Błąd średni kołowy: " + str(bladKolowy))
-    print()
-    print("Współczynnik korelacji jest równy: " + str(corelation))
-    print()
+        measureTime = [dataToAnalist[i].timestamp for i in range(len(dataToAnalist))]
+
+        timeCollection = [dmsToDD(measureTime[i].hour, measureTime[i].minute, measureTime[i].second) for i in range(len(measureTime))]
+
+    # viewSummary(countInputLines, countOutputLines, avgLatitudeDMS, avgLongitudeDMS, mseLatitude, mseLongitude,bladKolowy,corelation)
+
+    viewPlotPosition(cordinates['latitude'], cordinates['longitude'])
+    viewPlotLatitude(timeCollection, cordinates['latitude'])
+    viewPlotLongitude(timeCollection, cordinates['longitude'])
+    viewPlotCorelation(timeCollection, cordinates['latitude'], cordinates['longitude'])
 
     file.close()
 
