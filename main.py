@@ -210,7 +210,7 @@ def main():
 
         timeCollection = [dmsToDD(measureTime[i].hour, measureTime[i].minute, measureTime[i].second) for i in range(len(measureTime))]
 
-    # viewSummary(countInputLines, countOutputLines, avgLatitudeDMS, avgLongitudeDMS, mseLatitude, mseLongitude,bladKolowy,corelation)
+    viewSummary(countInputLines, countOutputLines, avgLatitudeDMS, avgLongitudeDMS, mseLatitude, mseLongitude,bladKolowy,corelation)
 
     viewPlotPosition(cordinates['latitude'], cordinates['longitude'])
     viewPlotLatitude(timeCollection, cordinates['latitude'])
