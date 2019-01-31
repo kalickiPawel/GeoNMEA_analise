@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# Created by: Paweł Kalicki
+
 import re
 import time
 import numpy as np
@@ -5,7 +8,7 @@ import pynmea2
 import matplotlib.pyplot as plt
 from scipy.stats.stats import pearsonr 
 
-dataUrl = 'geo_data.nmea'
+dataUrl = '19_12-2015_9_Kopice_left_desk_up_computer.nmea'
 pattern = r'GPGGA'
 
 def parseNMEA(data):
